@@ -1,6 +1,6 @@
 # Compound Growth Visualizer
 
-Interactive dividend reinvestment (DRIP) simulator built to model long-term compound returns from income-producing equities.
+Interactive dividend reinvestment (DRIP) simulator built to model long-term compound returns from income-producing equities. Defaults to Realty Income ($O) parameters.
 
 **[Live Demo](https://sbc1-code.github.io/compound-growth-visualizer/)**
 
@@ -8,16 +8,16 @@ Interactive dividend reinvestment (DRIP) simulator built to model long-term comp
 
 ## What It Does
 
-Plug in your numbers — initial investment, monthly contributions, dividend yield, growth assumptions — and see how compounding plays out over 5-40 years. The tool visualizes:
+Plug in your numbers and see how compounding plays out over 5-40 years. The tool visualizes:
 
 - **Portfolio value trajectory** with and without DRIP comparison
 - **Monthly dividend income** growth over time
 - **Share accumulation** from contributions + reinvested dividends
-- **Source breakdown** — how much comes from cash invested vs. dividends vs. appreciation
-- **Milestone tracking** — when you hit $500/mo income, $1M portfolio, etc.
+- **Source breakdown** showing cash invested vs. dividends vs. appreciation
+- **Milestone tracking** for income and portfolio targets
 - **Year-by-year table** with full detail
 
-All parameters update in real-time via range sliders. No backend, no accounts — everything runs in your browser.
+All parameters update in real-time via range sliders. No backend, no accounts. Everything runs in your browser.
 
 ## Why I Built It
 
@@ -28,7 +28,7 @@ I wanted to see the actual math behind dividend reinvestment before committing c
 - Vanilla JavaScript (no framework)
 - [Chart.js](https://www.chartjs.org/) for visualization
 - Single HTML file, zero dependencies to install
-- GitHub Pages hosting — $0/mo
+- GitHub Pages hosting, $0/mo
 
 ## Run Locally
 

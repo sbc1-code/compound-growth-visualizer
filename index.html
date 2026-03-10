@@ -3,25 +3,26 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>$O Compound Machine — Realty Income Visualizer</title>
+<title>$O Compound Machine | Realty Income DRIP Visualizer</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <style>
   :root {
-    --bg: #0f1117;
-    --surface: #1a1d27;
-    --surface2: #242736;
-    --border: #2e3142;
-    --text: #e4e4e7;
-    --muted: #8b8d9e;
-    --accent: #4f8ff7;
-    --green: #22c55e;
-    --orange: #f59e0b;
-    --red: #ef4444;
-    --purple: #a78bfa;
+    --bg: #0b0b0b;
+    --surface: #141414;
+    --surface2: #1a1a1a;
+    --border: #222222;
+    --text: #e8e8e8;
+    --muted: #888888;
+    --accent: #8a9a7b;
+    --green: #8a9a7b;
+    --orange: #b8a67e;
+    --red: #c47a7a;
+    --purple: #9a8ab0;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+    -webkit-font-smoothing: antialiased;
     background: var(--bg);
     color: var(--text);
     min-height: 100vh;
@@ -29,7 +30,8 @@
   }
   h1 {
     font-size: 28px;
-    font-weight: 700;
+    font-weight: 600;
+    letter-spacing: -0.5px;
     margin-bottom: 4px;
   }
   h1 span { color: var(--accent); }
@@ -51,7 +53,7 @@
   .panel {
     background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: 12px;
+    border-radius: 10px;
     padding: 24px;
   }
   .panel h2 {
@@ -120,7 +122,7 @@
     position: absolute;
     inset: 0;
     background: var(--surface2);
-    border-radius: 12px;
+    border-radius: 10px;
     cursor: pointer;
     transition: 0.2s;
   }
@@ -151,7 +153,7 @@
   .stat-card {
     background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: 12px;
+    border-radius: 10px;
     padding: 16px 20px;
   }
   .stat-card .label {
@@ -189,7 +191,7 @@
   .chart-box {
     background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: 12px;
+    border-radius: 10px;
     padding: 20px;
   }
   .chart-box.full { grid-column: 1 / -1; }
@@ -404,7 +406,7 @@
   </div>
 
   <p class="source">
-    Data as of Feb 2026 &mdash; $O: $3.24/yr dividend, ~5.27% yield, 26 years consecutive growth<br>
+    Data as of Feb 2026. $O: $3.24/yr dividend, ~5.27% yield, 26 years consecutive growth.<br>
     Sources:
     <a href="https://stockanalysis.com/stocks/o/dividend/" target="_blank">StockAnalysis</a> &middot;
     <a href="https://www.macrotrends.net/stocks/charts/O/realty-income/dividend-yield-history" target="_blank">Macrotrends</a> &middot;
@@ -422,12 +424,12 @@ const fmtShares = n => n.toLocaleString('en-US', {minimumFractionDigits: 1, maxi
 
 // --- Chart setup ---
 const chartColors = {
-  accent: '#4f8ff7',
-  green: '#22c55e',
-  orange: '#f59e0b',
-  purple: '#a78bfa',
-  red: '#ef4444',
-  muted: '#8b8d9e',
+  accent: '#8a9a7b',
+  green: '#8a9a7b',
+  orange: '#b8a67e',
+  purple: '#9a8ab0',
+  red: '#c47a7a',
+  muted: '#888888',
   gridColor: 'rgba(255,255,255,0.06)',
 };
 
@@ -448,11 +450,11 @@ const defaultScales = {
 
 Chart.defaults.plugins.legend.labels.color = chartColors.muted;
 Chart.defaults.plugins.legend.labels.font = { size: 12 };
-Chart.defaults.plugins.tooltip.backgroundColor = '#1a1d27';
-Chart.defaults.plugins.tooltip.borderColor = '#2e3142';
+Chart.defaults.plugins.tooltip.backgroundColor = '#141414';
+Chart.defaults.plugins.tooltip.borderColor = '#222222';
 Chart.defaults.plugins.tooltip.borderWidth = 1;
-Chart.defaults.plugins.tooltip.titleColor = '#e4e4e7';
-Chart.defaults.plugins.tooltip.bodyColor = '#e4e4e7';
+Chart.defaults.plugins.tooltip.titleColor = '#e8e8e8';
+Chart.defaults.plugins.tooltip.bodyColor = '#e8e8e8';
 
 const chartValue = new Chart(document.getElementById('chartValue'), {
   type: 'line',
@@ -658,7 +660,7 @@ function update() {
     label: p.drip ? 'With DRIP' : 'Portfolio Value',
     data: yearData.map(d => d.portfolioValue),
     borderColor: chartColors.green,
-    backgroundColor: 'rgba(34,197,94,0.1)',
+    backgroundColor: 'rgba(138,154,123,0.1)',
     fill: true,
     tension: 0.3,
     pointRadius: 3,
@@ -706,7 +708,7 @@ function update() {
     label: p.drip ? 'Shares (with DRIP)' : 'Shares',
     data: yearData.map(d => d.shares),
     borderColor: chartColors.purple,
-    backgroundColor: 'rgba(167,139,250,0.1)',
+    backgroundColor: 'rgba(154,138,176,0.1)',
     fill: true,
     tension: 0.3,
     pointRadius: 3,
@@ -764,7 +766,7 @@ function update() {
       <td>${fmt2(d.monthlyDiv)}</td>
       <td>${fmt(d.annualDiv)}</td>
       <td>${fmt(d.totalInvested)}</td>
-      <td style="color:${d.portfolioValue >= d.totalInvested ? '#22c55e' : '#ef4444'}">${fmt(d.portfolioValue - d.totalInvested)}</td>
+      <td style="color:${d.portfolioValue >= d.totalInvested ? '#8a9a7b' : '#c47a7a'}">${fmt(d.portfolioValue - d.totalInvested)}</td>
     </tr>
   `).join('');
 
