@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>$O Compound Machine — Realty Income Visualizer</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface2: #242736;
+    --border: #2e3142;
+    --text: #e4e4e7;
+    --muted: #8b8d9e;
+    --accent: #4f8ff7;
+    --green: #22c55e;
+    --orange: #f59e0b;
+    --red: #ef4444;
+    --purple: #a78bfa;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 24px;
+  }
+  h1 {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  h1 span { color: var(--accent); }
+  .subtitle {
+    color: var(--muted);
+    font-size: 14px;
+    margin-bottom: 32px;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: 340px 1fr;
+    gap: 24px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  @media (max-width: 900px) {
+    .grid { grid-template-columns: 1fr; }
+  }
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+  }
+  .panel h2 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 12px;
+  }
+  .control-group {
+    margin-bottom: 18px;
+  }
+  .control-group label {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 6px;
+  }
+  .control-group label .val {
+    color: var(--accent);
+    font-weight: 700;
+    font-size: 15px;
+    font-variant-numeric: tabular-nums;
+  }
+  input[type="range"] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 6px;
+    border-radius: 3px;
+    background: var(--surface2);
+    outline: none;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+    border: 2px solid var(--bg);
+  }
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 20px 0;
+  }
+  .toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 12px;
+  }
+  .toggle {
+    position: relative;
+    width: 44px;
+    height: 24px;
+  }
+  .toggle input { opacity: 0; width: 0; height: 0; }
+  .toggle .slider {
+    position: absolute;
+    inset: 0;
+    background: var(--surface2);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+  .toggle .slider:before {
+    content: '';
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    left: 3px;
+    top: 3px;
+    background: var(--text);
+    border-radius: 50%;
+    transition: 0.2s;
+  }
+  .toggle input:checked + .slider { background: var(--accent); }
+  .toggle input:checked + .slider:before { transform: translateX(20px); }
+
+  /* Stats cards */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  @media (max-width: 900px) {
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+  }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 20px;
+  }
+  .stat-card .label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .stat-card .value {
+    font-size: 24px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+  .stat-card .sub {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+  .stat-card .value.green { color: var(--green); }
+  .stat-card .value.orange { color: var(--orange); }
+  .stat-card .value.purple { color: var(--purple); }
+  .stat-card .value.accent { color: var(--accent); }
+
+  /* Charts */
+  .chart-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  @media (max-width: 900px) {
+    .chart-grid { grid-template-columns: 1fr; }
+  }
+  .chart-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+  }
+  .chart-box.full { grid-column: 1 / -1; }
+  .chart-box h3 {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 12px;
+  }
+  .chart-box canvas {
+    width: 100% !important;
+  }
+
+  /* Year-by-year table */
+  .table-wrap {
+    max-height: 400px;
+    overflow-y: auto;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+  }
+  thead th {
+    position: sticky;
+    top: 0;
+    background: var(--surface2);
+    padding: 10px 12px;
+    text-align: right;
+    font-weight: 600;
+    color: var(--muted);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+  thead th:first-child { text-align: left; }
+  tbody td {
+    padding: 8px 12px;
+    text-align: right;
+    border-top: 1px solid var(--border);
+  }
+  tbody td:first-child { text-align: left; font-weight: 600; }
+  tbody tr:hover { background: var(--surface2); }
+
+  .source {
+    text-align: center;
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 24px;
+  }
+  .source a { color: var(--accent); text-decoration: none; }
+
+  /* Milestone callouts */
+  .milestones {
+    margin-top: 16px;
+  }
+  .milestone {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: var(--surface2);
+    border-radius: 8px;
+    margin-bottom: 8px;
+    font-size: 13px;
+  }
+  .milestone .icon {
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .milestone .year-badge {
+    background: var(--accent);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 4px;
+    flex-shrink: 0;
+  }
+</style>
+</head>
+<body>
+
+<div style="max-width:1400px;margin:0 auto;">
+  <h1><span>$O</span> Compound Machine</h1>
+  <p class="subtitle">Realty Income dividend reinvestment + growing contributions visualizer</p>
+
+  <div class="stats-row" id="stats-row"></div>
+
+  <div class="grid">
+    <!-- LEFT: Controls -->
+    <div>
+      <div class="panel">
+        <h2>Your Investment</h2>
+
+        <div class="control-group">
+          <label>Initial Investment <span class="val" id="v-initial">$50,000</span></label>
+          <input type="range" id="initial" min="5000" max="200000" step="1000" value="50000">
+        </div>
+
+        <div class="control-group">
+          <label>Monthly Contribution <span class="val" id="v-monthly">$500</span></label>
+          <input type="range" id="monthly" min="0" max="5000" step="50" value="500">
+        </div>
+
+        <div class="control-group">
+          <label>Annual Contribution Increase <span class="val" id="v-contrib-growth">5%</span></label>
+          <input type="range" id="contribGrowth" min="0" max="20" step="1" value="5">
+        </div>
+
+        <div class="control-group">
+          <label>Time Horizon <span class="val" id="v-years">20 years</span></label>
+          <input type="range" id="years" min="5" max="40" step="1" value="20">
+        </div>
+
+        <hr class="divider">
+        <h2>$O Assumptions</h2>
+
+        <div class="control-group">
+          <label>Current Share Price <span class="val" id="v-price">$61.50</span></label>
+          <input type="range" id="price" min="30" max="120" step="0.50" value="61.50">
+        </div>
+
+        <div class="control-group">
+          <label>Dividend Yield <span class="val" id="v-yield">5.27%</span></label>
+          <input type="range" id="divYield" min="2" max="10" step="0.01" value="5.27">
+        </div>
+
+        <div class="control-group">
+          <label>Annual Dividend Growth <span class="val" id="v-divgrow">3.0%</span></label>
+          <input type="range" id="divGrowth" min="0" max="8" step="0.1" value="3.0">
+        </div>
+
+        <div class="control-group">
+          <label>Annual Price Appreciation <span class="val" id="v-priceapp">2.0%</span></label>
+          <input type="range" id="priceApp" min="0" max="10" step="0.5" value="2.0">
+        </div>
+
+        <hr class="divider">
+        <h2>Options</h2>
+
+        <div class="toggle-row">
+          Reinvest Dividends (DRIP)
+          <label class="toggle">
+            <input type="checkbox" id="drip" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="toggle-row">
+          Show Without DRIP Comparison
+          <label class="toggle">
+            <input type="checkbox" id="showNoDrip" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Milestones -->
+      <div class="panel" style="margin-top:16px;">
+        <h2>Key Milestones</h2>
+        <div class="milestones" id="milestones"></div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Charts & Table -->
+    <div>
+      <div class="chart-box full">
+        <h3>Portfolio Value Over Time</h3>
+        <canvas id="chartValue" height="260"></canvas>
+      </div>
+
+      <div class="chart-grid" style="margin-top:16px;">
+        <div class="chart-box">
+          <h3>Monthly Dividend Income</h3>
+          <canvas id="chartIncome" height="220"></canvas>
+        </div>
+        <div class="chart-box">
+          <h3>Shares Owned</h3>
+          <canvas id="chartShares" height="220"></canvas>
+        </div>
+      </div>
+
+      <div class="chart-box" style="margin-top:16px;">
+        <h3>Where Your Money Comes From</h3>
+        <canvas id="chartBreakdown" height="240"></canvas>
+      </div>
+
+      <div class="chart-box" style="margin-top:16px;">
+        <h3>Year-by-Year Breakdown</h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Year</th>
+                <th>Shares</th>
+                <th>Share Price</th>
+                <th>Portfolio Value</th>
+                <th>Monthly Div</th>
+                <th>Annual Divs</th>
+                <th>Total Invested</th>
+                <th>Total Return</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <p class="source">
+    Data as of Feb 2026 &mdash; $O: $3.24/yr dividend, ~5.27% yield, 26 years consecutive growth<br>
+    Sources:
+    <a href="https://stockanalysis.com/stocks/o/dividend/" target="_blank">StockAnalysis</a> &middot;
+    <a href="https://www.macrotrends.net/stocks/charts/O/realty-income/dividend-yield-history" target="_blank">Macrotrends</a> &middot;
+    <a href="https://www.marketbeat.com/stocks/NYSE/O/dividend/" target="_blank">MarketBeat</a>
+    <br><em>For illustration only. Not financial advice. Past performance does not guarantee future results.</em>
+  </p>
+</div>
+
+<script>
+// --- Formatting helpers ---
+const fmt = n => '$' + n.toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 0});
+const fmt2 = n => '$' + n.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+const fmtPct = n => n.toFixed(1) + '%';
+const fmtShares = n => n.toLocaleString('en-US', {minimumFractionDigits: 1, maximumFractionDigits: 1});
+
+// --- Chart setup ---
+const chartColors = {
+  accent: '#4f8ff7',
+  green: '#22c55e',
+  orange: '#f59e0b',
+  purple: '#a78bfa',
+  red: '#ef4444',
+  muted: '#8b8d9e',
+  gridColor: 'rgba(255,255,255,0.06)',
+};
+
+const defaultScales = {
+  x: {
+    grid: { color: chartColors.gridColor },
+    ticks: { color: chartColors.muted, font: { size: 11 } },
+  },
+  y: {
+    grid: { color: chartColors.gridColor },
+    ticks: {
+      color: chartColors.muted,
+      font: { size: 11 },
+      callback: v => fmt(v),
+    },
+  }
+};
+
+Chart.defaults.plugins.legend.labels.color = chartColors.muted;
+Chart.defaults.plugins.legend.labels.font = { size: 12 };
+Chart.defaults.plugins.tooltip.backgroundColor = '#1a1d27';
+Chart.defaults.plugins.tooltip.borderColor = '#2e3142';
+Chart.defaults.plugins.tooltip.borderWidth = 1;
+Chart.defaults.plugins.tooltip.titleColor = '#e4e4e7';
+Chart.defaults.plugins.tooltip.bodyColor = '#e4e4e7';
+
+const chartValue = new Chart(document.getElementById('chartValue'), {
+  type: 'line',
+  data: { labels: [], datasets: [] },
+  options: {
+    responsive: true,
+    interaction: { mode: 'index', intersect: false },
+    scales: { ...defaultScales },
+    plugins: {
+      tooltip: {
+        callbacks: { label: ctx => ctx.dataset.label + ': ' + fmt(ctx.parsed.y) }
+      }
+    }
+  }
+});
+
+const chartIncome = new Chart(document.getElementById('chartIncome'), {
+  type: 'bar',
+  data: { labels: [], datasets: [] },
+  options: {
+    responsive: true,
+    scales: { ...defaultScales },
+    plugins: {
+      tooltip: {
+        callbacks: { label: ctx => ctx.dataset.label + ': ' + fmt2(ctx.parsed.y) }
+      }
+    }
+  }
+});
+
+const chartShares = new Chart(document.getElementById('chartShares'), {
+  type: 'line',
+  data: { labels: [], datasets: [] },
+  options: {
+    responsive: true,
+    scales: {
+      ...defaultScales,
+      y: {
+        ...defaultScales.y,
+        ticks: { ...defaultScales.y.ticks, callback: v => fmtShares(v) }
+      }
+    },
+    plugins: {
+      tooltip: {
+        callbacks: { label: ctx => ctx.dataset.label + ': ' + fmtShares(ctx.parsed.y) }
+      }
+    }
+  }
+});
+
+const chartBreakdown = new Chart(document.getElementById('chartBreakdown'), {
+  type: 'bar',
+  data: { labels: [], datasets: [] },
+  options: {
+    responsive: true,
+    scales: {
+      ...defaultScales,
+      x: { ...defaultScales.x, stacked: true },
+      y: { ...defaultScales.y, stacked: true },
+    },
+    plugins: {
+      tooltip: {
+        callbacks: { label: ctx => ctx.dataset.label + ': ' + fmt(ctx.parsed.y) }
+      }
+    }
+  }
+});
+
+// --- Simulation engine ---
+function simulate(params) {
+  const { initial, monthly, contribGrowth, years, price, divYield, divGrowth, priceApp, drip } = params;
+
+  // Monthly dividend per share at start = (price * yield) / 12
+  let annualDivPerShare = price * (divYield / 100);
+  let currentPrice = price;
+  let shares = initial / price;
+  let totalInvested = initial;
+  let totalDividendsEarned = 0;
+  let currentMonthly = monthly;
+
+  const yearLabels = [];
+  const yearData = [];
+
+  for (let y = 0; y <= years; y++) {
+    const portfolioValue = shares * currentPrice;
+    const monthlyDiv = (annualDivPerShare / 12) * shares;
+    const annualDiv = annualDivPerShare * shares;
+
+    yearLabels.push(y === 0 ? 'Start' : 'Year ' + y);
+    yearData.push({
+      year: y,
+      shares,
+      price: currentPrice,
+      portfolioValue,
+      monthlyDiv,
+      annualDiv,
+      totalInvested,
+      totalDividendsEarned,
+      totalReturn: portfolioValue - totalInvested + totalDividendsEarned * (drip ? 0 : 1),
+      contributionsValue: totalInvested,
+      dividendsReinvested: totalDividendsEarned,
+      appreciation: portfolioValue - totalInvested - (drip ? totalDividendsEarned : 0),
+    });
+
+    if (y === years) break;
+
+    // Simulate 12 months
+    for (let m = 0; m < 12; m++) {
+      // Monthly dividend
+      const monthDiv = (annualDivPerShare / 12) * shares;
+      totalDividendsEarned += monthDiv;
+
+      if (drip) {
+        // Reinvest dividends
+        const newShares = monthDiv / currentPrice;
+        shares += newShares;
+      }
+
+      // Monthly contribution
+      const newSharesFromContrib = currentMonthly / currentPrice;
+      shares += newSharesFromContrib;
+      totalInvested += currentMonthly;
+    }
+
+    // Annual updates
+    annualDivPerShare *= (1 + divGrowth / 100);
+    currentPrice *= (1 + priceApp / 100);
+    currentMonthly *= (1 + contribGrowth / 100);
+  }
+
+  return { yearLabels, yearData };
+}
+
+function simulateNoDrip(params) {
+  return simulate({ ...params, drip: false });
+}
+
+// --- Gather params ---
+function getParams() {
+  return {
+    initial: +document.getElementById('initial').value,
+    monthly: +document.getElementById('monthly').value,
+    contribGrowth: +document.getElementById('contribGrowth').value,
+    years: +document.getElementById('years').value,
+    price: +document.getElementById('price').value,
+    divYield: +document.getElementById('divYield').value,
+    divGrowth: +document.getElementById('divGrowth').value,
+    priceApp: +document.getElementById('priceApp').value,
+    drip: document.getElementById('drip').checked,
+  };
+}
+
+// --- Update everything ---
+function update() {
+  const p = getParams();
+  const showNoDrip = document.getElementById('showNoDrip').checked;
+
+  // Update labels
+  document.getElementById('v-initial').textContent = fmt(p.initial);
+  document.getElementById('v-monthly').textContent = fmt(p.monthly);
+  document.getElementById('v-contrib-growth').textContent = p.contribGrowth + '%';
+  document.getElementById('v-years').textContent = p.years + ' years';
+  document.getElementById('v-price').textContent = fmt2(p.price);
+  document.getElementById('v-yield').textContent = fmtPct(p.divYield);
+  document.getElementById('v-divgrow').textContent = fmtPct(p.divGrowth);
+  document.getElementById('v-priceapp').textContent = fmtPct(p.priceApp);
+
+  // Run simulation
+  const { yearLabels, yearData } = simulate(p);
+  const noDripData = showNoDrip ? simulateNoDrip(p) : null;
+
+  const last = yearData[yearData.length - 1];
+  const totalCashInvested = last.totalInvested;
+  const totalGain = last.portfolioValue - totalCashInvested;
+  const totalReturnPct = ((last.portfolioValue / totalCashInvested) - 1) * 100;
+
+  // Stats cards
+  document.getElementById('stats-row').innerHTML = `
+    <div class="stat-card">
+      <div class="label">Portfolio Value (Year ${p.years})</div>
+      <div class="value green">${fmt(last.portfolioValue)}</div>
+      <div class="sub">${fmtShares(last.shares)} shares @ ${fmt2(last.price)}</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Monthly Dividend Income</div>
+      <div class="value orange">${fmt2(last.monthlyDiv)}</div>
+      <div class="sub">${fmt(last.annualDiv)}/year</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Total Cash Invested</div>
+      <div class="value accent">${fmt(totalCashInvested)}</div>
+      <div class="sub">${fmt(p.initial)} initial + ${fmt(totalCashInvested - p.initial)} contributions</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Total Gain</div>
+      <div class="value purple">${fmt(totalGain)}</div>
+      <div class="sub">${totalReturnPct.toFixed(1)}% total return</div>
+    </div>
+  `;
+
+  // --- Chart: Portfolio Value ---
+  const valueSets = [{
+    label: p.drip ? 'With DRIP' : 'Portfolio Value',
+    data: yearData.map(d => d.portfolioValue),
+    borderColor: chartColors.green,
+    backgroundColor: 'rgba(34,197,94,0.1)',
+    fill: true,
+    tension: 0.3,
+    pointRadius: 3,
+  }];
+
+  if (showNoDrip && p.drip) {
+    valueSets.push({
+      label: 'Without DRIP',
+      data: noDripData.yearData.map(d => d.portfolioValue),
+      borderColor: chartColors.muted,
+      backgroundColor: 'transparent',
+      borderDash: [6, 4],
+      tension: 0.3,
+      pointRadius: 2,
+    });
+  }
+
+  // Cost basis line
+  valueSets.push({
+    label: 'Total Invested',
+    data: yearData.map(d => d.totalInvested),
+    borderColor: chartColors.orange,
+    backgroundColor: 'transparent',
+    borderDash: [4, 4],
+    tension: 0.3,
+    pointRadius: 0,
+  });
+
+  chartValue.data.labels = yearLabels;
+  chartValue.data.datasets = valueSets;
+  chartValue.update();
+
+  // --- Chart: Monthly Income ---
+  chartIncome.data.labels = yearLabels;
+  chartIncome.data.datasets = [{
+    label: 'Monthly Dividend',
+    data: yearData.map(d => d.monthlyDiv),
+    backgroundColor: chartColors.orange,
+    borderRadius: 4,
+  }];
+  chartIncome.update();
+
+  // --- Chart: Shares ---
+  const sharesSets = [{
+    label: p.drip ? 'Shares (with DRIP)' : 'Shares',
+    data: yearData.map(d => d.shares),
+    borderColor: chartColors.purple,
+    backgroundColor: 'rgba(167,139,250,0.1)',
+    fill: true,
+    tension: 0.3,
+    pointRadius: 3,
+  }];
+
+  if (showNoDrip && p.drip) {
+    sharesSets.push({
+      label: 'Shares (no DRIP)',
+      data: noDripData.yearData.map(d => d.shares),
+      borderColor: chartColors.muted,
+      backgroundColor: 'transparent',
+      borderDash: [6, 4],
+      tension: 0.3,
+      pointRadius: 2,
+    });
+  }
+
+  chartShares.data.labels = yearLabels;
+  chartShares.data.datasets = sharesSets;
+  chartShares.options.scales.y.ticks.callback = v => fmtShares(v);
+  chartShares.update();
+
+  // --- Chart: Breakdown (stacked bar) ---
+  chartBreakdown.data.labels = yearLabels;
+  chartBreakdown.data.datasets = [
+    {
+      label: 'Cash Invested',
+      data: yearData.map(d => d.contributionsValue),
+      backgroundColor: chartColors.accent,
+      borderRadius: 2,
+    },
+    {
+      label: 'Dividends Reinvested',
+      data: yearData.map(d => Math.max(0, d.dividendsReinvested)),
+      backgroundColor: chartColors.orange,
+      borderRadius: 2,
+    },
+    {
+      label: 'Price Appreciation',
+      data: yearData.map(d => Math.max(0, d.appreciation)),
+      backgroundColor: chartColors.green,
+      borderRadius: 2,
+    },
+  ];
+  chartBreakdown.update();
+
+  // --- Table ---
+  const tbody = document.getElementById('tableBody');
+  tbody.innerHTML = yearData.map(d => `
+    <tr>
+      <td>${d.year === 0 ? 'Start' : 'Year ' + d.year}</td>
+      <td>${fmtShares(d.shares)}</td>
+      <td>${fmt2(d.price)}</td>
+      <td>${fmt(d.portfolioValue)}</td>
+      <td>${fmt2(d.monthlyDiv)}</td>
+      <td>${fmt(d.annualDiv)}</td>
+      <td>${fmt(d.totalInvested)}</td>
+      <td style="color:${d.portfolioValue >= d.totalInvested ? '#22c55e' : '#ef4444'}">${fmt(d.portfolioValue - d.totalInvested)}</td>
+    </tr>
+  `).join('');
+
+  // --- Milestones ---
+  const milestonesDiv = document.getElementById('milestones');
+  const milestones = [];
+
+  // Find year where monthly div covers X
+  const targets = [
+    { amount: 500, label: '$500/mo in dividends', icon: '1' },
+    { amount: 1000, label: '$1,000/mo in dividends', icon: '2' },
+    { amount: 2000, label: '$2,000/mo in dividends', icon: '3' },
+    { amount: 3000, label: '$3,000/mo in dividends', icon: '4' },
+    { amount: 5000, label: '$5,000/mo in dividends', icon: '5' },
+  ];
+
+  for (const t of targets) {
+    const hit = yearData.find(d => d.monthlyDiv >= t.amount);
+    if (hit) {
+      milestones.push({
+        year: hit.year,
+        label: t.label,
+        icon: t.icon,
+      });
+    }
+  }
+
+  // Find year where portfolio hits milestones
+  const portfolioTargets = [
+    { amount: 100000, label: '$100K portfolio' },
+    { amount: 250000, label: '$250K portfolio' },
+    { amount: 500000, label: '$500K portfolio' },
+    { amount: 1000000, label: '$1M portfolio' },
+  ];
+  for (const t of portfolioTargets) {
+    const hit = yearData.find(d => d.portfolioValue >= t.amount);
+    if (hit && hit.year > 0) {
+      milestones.push({ year: hit.year, label: t.label, icon: 'P' });
+    }
+  }
+
+  milestones.sort((a, b) => a.year - b.year);
+
+  if (milestones.length === 0) {
+    milestonesDiv.innerHTML = '<div style="color:var(--muted);font-size:13px;">Adjust parameters to see milestones</div>';
+  } else {
+    milestonesDiv.innerHTML = milestones.map(m => `
+      <div class="milestone">
+        <span class="year-badge">Yr ${m.year}</span>
+        <span>${m.label}</span>
+      </div>
+    `).join('');
+  }
+}
+
+// --- Wire up controls ---
+document.querySelectorAll('input[type="range"], input[type="checkbox"]').forEach(el => {
+  el.addEventListener('input', update);
+});
+
+// Initial render
+update();
+</script>
+</body>
+</html>
