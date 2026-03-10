@@ -20,6 +20,19 @@
     --red: #c47a7a;
     --purple: #9a8ab0;
   }
+  [data-theme="light"] {
+    --bg: #f5f3f0;
+    --surface: #ffffff;
+    --surface2: #eae8e4;
+    --border: #d5d3cf;
+    --text: #1a1a1a;
+    --muted: #6b6b6b;
+    --accent: #5c6b50;
+    --green: #5c6b50;
+    --orange: #8a7030;
+    --red: #a03030;
+    --purple: #6b5a80;
+  }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
@@ -28,6 +41,7 @@
     color: var(--text);
     min-height: 100vh;
     padding: 24px;
+    transition: background-color 0.3s, color 0.3s;
   }
   h1 {
     font-size: 28px;
@@ -39,7 +53,7 @@
   .subtitle {
     color: var(--muted);
     font-size: 14px;
-    margin-bottom: 32px;
+    margin-bottom: 0;
   }
   .grid {
     display: grid;
@@ -56,6 +70,7 @@
     border: 1px solid var(--border);
     border-radius: 10px;
     padding: 24px;
+    transition: background-color 0.3s, border-color 0.3s;
   }
   .panel h2 {
     font-size: 16px;
@@ -180,6 +195,7 @@
     border: 1px solid var(--border);
     border-radius: 10px;
     padding: 16px 20px;
+    transition: background-color 0.3s, border-color 0.3s;
   }
   .stat-card .label {
     font-size: 11px;
@@ -218,6 +234,7 @@
     border: 1px solid var(--border);
     border-radius: 10px;
     padding: 20px;
+    transition: background-color 0.3s, border-color 0.3s;
   }
   .chart-box.full { grid-column: 1 / -1; }
   .chart-box h3 {
@@ -298,13 +315,33 @@
     border-radius: 4px;
     flex-shrink: 0;
   }
+  .theme-toggle {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 6px 10px;
+    cursor: pointer;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-family: inherit;
+    transition: all 0.2s;
+  }
+  .theme-toggle:hover { border-color: var(--accent); color: var(--text); }
 </style>
 </head>
 <body>
 
 <main style="max-width:1400px;margin:0 auto;">
-  <h1><span>$O</span> Compound Machine</h1>
-  <p class="subtitle">Realty Income dividend reinvestment + growing contributions visualizer <span id="live-badge" style="display:none;font-size:11px;background:#8a9a7b;color:#0b0b0b;padding:2px 8px;border-radius:4px;font-weight:600;letter-spacing:0.3px;vertical-align:middle;">LIVE</span></p>
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:32px;">
+    <div>
+      <h1><span>$O</span> Compound Machine</h1>
+      <p class="subtitle">Realty Income dividend reinvestment + growing contributions visualizer <span id="live-badge" style="display:none;font-size:11px;background:var(--accent);color:var(--bg);padding:2px 8px;border-radius:4px;font-weight:600;letter-spacing:0.3px;vertical-align:middle;">LIVE</span></p>
+    </div>
+    <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme"></button>
+  </div>
 
   <div class="stats-row" id="stats-row"></div>
 
@@ -792,7 +829,7 @@ function update() {
       <td>${fmt2(d.monthlyDiv)}</td>
       <td>${fmt(d.annualDiv)}</td>
       <td>${fmt(d.totalInvested)}</td>
-      <td style="color:${d.portfolioValue >= d.totalInvested ? '#8a9a7b' : '#c47a7a'}">${fmt(d.portfolioValue - d.totalInvested)}</td>
+      <td style="color:${d.portfolioValue >= d.totalInvested ? 'var(--green)' : 'var(--red)'}">${fmt(d.portfolioValue - d.totalInvested)}</td>
     </tr>
   `).join('');
 
@@ -882,6 +919,66 @@ fetch('data.json')
     }
   })
   .catch(() => { /* Graceful fallback to defaults */ });
+
+// Theme toggle
+(function() {
+  const toggle = document.getElementById('theme-toggle');
+  const stored = localStorage.getItem('theme');
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+
+  function setTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+    toggle.innerHTML = theme === 'light'
+      ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>'
+      : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>';
+    updateChartColors(theme);
+  }
+
+  function updateChartColors(theme) {
+    const isDark = theme !== 'light';
+    const colors = {
+      gridColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)',
+      muted: isDark ? '#888888' : '#6b6b6b',
+      text: isDark ? '#e8e8e8' : '#1a1a1a',
+      tooltipBg: isDark ? '#141414' : '#ffffff',
+      tooltipBorder: isDark ? '#222222' : '#d5d3cf',
+    };
+
+    // Update Chart.js defaults
+    Chart.defaults.plugins.legend.labels.color = colors.muted;
+    Chart.defaults.plugins.tooltip.backgroundColor = colors.tooltipBg;
+    Chart.defaults.plugins.tooltip.borderColor = colors.tooltipBorder;
+    Chart.defaults.plugins.tooltip.titleColor = colors.text;
+    Chart.defaults.plugins.tooltip.bodyColor = colors.text;
+
+    // Update all chart scales
+    [chartValue, chartIncome, chartShares, chartBreakdown].forEach(chart => {
+      if (chart.options.scales.x) {
+        chart.options.scales.x.grid.color = colors.gridColor;
+        chart.options.scales.x.ticks.color = colors.muted;
+      }
+      if (chart.options.scales.y) {
+        chart.options.scales.y.grid.color = colors.gridColor;
+        chart.options.scales.y.ticks.color = colors.muted;
+      }
+      chart.update();
+    });
+  }
+
+  if (stored) { setTheme(stored); }
+  else if (!prefersDark.matches) { setTheme('light'); }
+  else { setTheme('dark'); }
+
+  toggle.addEventListener('click', () => {
+    const current = document.documentElement.getAttribute('data-theme');
+    setTheme(current === 'light' ? 'dark' : 'light');
+  });
+
+  prefersDark.addEventListener('change', (e) => {
+    if (!localStorage.getItem('theme')) setTheme(e.matches ? 'dark' : 'light');
+  });
+})();
 </script>
 </body>
 </html>
