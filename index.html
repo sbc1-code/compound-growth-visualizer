@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>$O Compound Machine | Realty Income DRIP Visualizer</title>
+<meta name="description" content="Interactive dividend reinvestment simulator for Realty Income ($O). Model DRIP compound growth with adjustable parameters.">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <style>
   :root {
@@ -98,6 +99,15 @@
     background: var(--accent);
     cursor: pointer;
     border: 2px solid var(--bg);
+  }
+  input[type="range"]:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 4px;
+    border-radius: 3px;
+  }
+  .toggle input:focus-visible + .slider {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
   }
   .divider {
     border: none;
@@ -266,7 +276,7 @@
   }
   .milestone .year-badge {
     background: var(--accent);
-    color: #fff;
+    color: var(--bg);
     font-size: 11px;
     font-weight: 700;
     padding: 2px 8px;
@@ -277,9 +287,9 @@
 </head>
 <body>
 
-<div style="max-width:1400px;margin:0 auto;">
+<main style="max-width:1400px;margin:0 auto;">
   <h1><span>$O</span> Compound Machine</h1>
-  <p class="subtitle">Realty Income dividend reinvestment + growing contributions visualizer</p>
+  <p class="subtitle">Realty Income dividend reinvestment + growing contributions visualizer <span id="live-badge" style="display:none;font-size:11px;background:#8a9a7b;color:#0b0b0b;padding:2px 8px;border-radius:4px;font-weight:600;letter-spacing:0.3px;vertical-align:middle;">LIVE</span></p>
 
   <div class="stats-row" id="stats-row"></div>
 
@@ -291,22 +301,22 @@
 
         <div class="control-group">
           <label>Initial Investment <span class="val" id="v-initial">$50,000</span></label>
-          <input type="range" id="initial" min="5000" max="200000" step="1000" value="50000">
+          <input type="range" id="initial" min="5000" max="200000" step="1000" value="50000" aria-label="Initial Investment">
         </div>
 
         <div class="control-group">
           <label>Monthly Contribution <span class="val" id="v-monthly">$500</span></label>
-          <input type="range" id="monthly" min="0" max="5000" step="50" value="500">
+          <input type="range" id="monthly" min="0" max="5000" step="50" value="500" aria-label="Monthly Contribution">
         </div>
 
         <div class="control-group">
           <label>Annual Contribution Increase <span class="val" id="v-contrib-growth">5%</span></label>
-          <input type="range" id="contribGrowth" min="0" max="20" step="1" value="5">
+          <input type="range" id="contribGrowth" min="0" max="20" step="1" value="5" aria-label="Annual Contribution Increase">
         </div>
 
         <div class="control-group">
           <label>Time Horizon <span class="val" id="v-years">20 years</span></label>
-          <input type="range" id="years" min="5" max="40" step="1" value="20">
+          <input type="range" id="years" min="5" max="40" step="1" value="20" aria-label="Time Horizon">
         </div>
 
         <hr class="divider">
@@ -314,22 +324,22 @@
 
         <div class="control-group">
           <label>Current Share Price <span class="val" id="v-price">$61.50</span></label>
-          <input type="range" id="price" min="30" max="120" step="0.50" value="61.50">
+          <input type="range" id="price" min="30" max="120" step="0.50" value="61.50" aria-label="Current Share Price">
         </div>
 
         <div class="control-group">
           <label>Dividend Yield <span class="val" id="v-yield">5.27%</span></label>
-          <input type="range" id="divYield" min="2" max="10" step="0.01" value="5.27">
+          <input type="range" id="divYield" min="2" max="10" step="0.01" value="5.27" aria-label="Dividend Yield">
         </div>
 
         <div class="control-group">
           <label>Annual Dividend Growth <span class="val" id="v-divgrow">3.0%</span></label>
-          <input type="range" id="divGrowth" min="0" max="8" step="0.1" value="3.0">
+          <input type="range" id="divGrowth" min="0" max="8" step="0.1" value="3.0" aria-label="Annual Dividend Growth">
         </div>
 
         <div class="control-group">
           <label>Annual Price Appreciation <span class="val" id="v-priceapp">2.0%</span></label>
-          <input type="range" id="priceApp" min="0" max="10" step="0.5" value="2.0">
+          <input type="range" id="priceApp" min="0" max="10" step="0.5" value="2.0" aria-label="Annual Price Appreciation">
         </div>
 
         <hr class="divider">
@@ -338,7 +348,7 @@
         <div class="toggle-row">
           Reinvest Dividends (DRIP)
           <label class="toggle">
-            <input type="checkbox" id="drip" checked>
+            <input type="checkbox" id="drip" checked aria-label="Reinvest Dividends (DRIP)">
             <span class="slider"></span>
           </label>
         </div>
@@ -346,7 +356,7 @@
         <div class="toggle-row">
           Show Without DRIP Comparison
           <label class="toggle">
-            <input type="checkbox" id="showNoDrip" checked>
+            <input type="checkbox" id="showNoDrip" checked aria-label="Show Without DRIP Comparison">
             <span class="slider"></span>
           </label>
         </div>
@@ -406,14 +416,14 @@
   </div>
 
   <p class="source">
-    Data as of Feb 2026. $O: $3.24/yr dividend, ~5.27% yield, 26 years consecutive growth.<br>
+    Share price updates daily after market close. $O: $3.24/yr dividend, 26+ years consecutive growth.<br>
     Sources:
     <a href="https://stockanalysis.com/stocks/o/dividend/" target="_blank">StockAnalysis</a> &middot;
     <a href="https://www.macrotrends.net/stocks/charts/O/realty-income/dividend-yield-history" target="_blank">Macrotrends</a> &middot;
     <a href="https://www.marketbeat.com/stocks/NYSE/O/dividend/" target="_blank">MarketBeat</a>
     <br><em>For illustration only. Not financial advice. Past performance does not guarantee future results.</em>
   </p>
-</div>
+</main>
 
 <script>
 // --- Formatting helpers ---
@@ -829,6 +839,33 @@ document.querySelectorAll('input[type="range"], input[type="checkbox"]').forEach
 
 // Initial render
 update();
+
+// Fetch live $O price from data.json (updated daily via GitHub Actions)
+fetch('data.json')
+  .then(r => r.json())
+  .then(data => {
+    if (data.price) {
+      const priceSlider = document.getElementById('price');
+      priceSlider.value = data.price;
+
+      // Calculate current yield from known annual dividend
+      const annualDiv = 3.24; // $O current annual dividend
+      const currentYield = (annualDiv / data.price) * 100;
+      const yieldSlider = document.getElementById('divYield');
+      yieldSlider.value = currentYield.toFixed(2);
+
+      // Show live badge with date
+      const badge = document.getElementById('live-badge');
+      const updated = new Date(data.updated);
+      const dateStr = updated.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      badge.textContent = 'LIVE · ' + dateStr;
+      badge.style.display = 'inline';
+      badge.title = '$O: $' + data.price + ' as of ' + dateStr + ' (auto-updated weekdays after market close)';
+
+      update();
+    }
+  })
+  .catch(() => { /* Graceful fallback to defaults */ });
 </script>
 </body>
 </html>

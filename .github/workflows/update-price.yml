@@ -1,0 +1,46 @@
+name: Update $O Price
+
+on:
+  schedule:
+    - cron: '30 21 * * 1-5'  # 4:30 PM ET (after market close), weekdays only
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch current $O data
+        run: |
+          curl -s "https://query1.finance.yahoo.com/v8/finance/chart/O?interval=1d&range=1d" \
+            -H "User-Agent: Mozilla/5.0" \
+            -o /tmp/raw.json
+
+          python3 -c "
+          import json, datetime
+          with open('/tmp/raw.json') as f:
+              d = json.load(f)
+          meta = d['chart']['result'][0]['meta']
+          data = {
+              'symbol': 'O',
+              'price': round(meta['regularMarketPrice'], 2),
+              'previousClose': round(meta.get('chartPreviousClose', meta['regularMarketPrice']), 2),
+              'fiftyTwoWeekHigh': round(meta.get('fiftyTwoWeekHigh', 0), 2),
+              'fiftyTwoWeekLow': round(meta.get('fiftyTwoWeekLow', 0), 2),
+              'updated': datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
+          }
+          with open('data.json', 'w') as f:
+              json.dump(data, f, indent=2)
+          print(f'Updated: \$O = \${data[\"price\"]}')
+          "
+
+      - name: Commit if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data.json
+          git diff --cached --quiet || git commit -m "Update \$O price data" && git push
