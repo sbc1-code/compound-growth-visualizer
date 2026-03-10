@@ -109,6 +109,21 @@
     outline: 2px solid var(--accent);
     outline-offset: 2px;
   }
+  a:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0,0,0,0);
+    border: 0;
+  }
   .divider {
     border: none;
     border-top: 1px solid var(--border);
@@ -373,29 +388,30 @@
     <div>
       <div class="chart-box full">
         <h3>Portfolio Value Over Time</h3>
-        <canvas id="chartValue" height="260"></canvas>
+        <canvas id="chartValue" height="260" role="img" aria-label="Line chart showing portfolio value growth over time"></canvas>
       </div>
 
       <div class="chart-grid" style="margin-top:16px;">
         <div class="chart-box">
           <h3>Monthly Dividend Income</h3>
-          <canvas id="chartIncome" height="220"></canvas>
+          <canvas id="chartIncome" height="220" role="img" aria-label="Bar chart showing monthly dividend income by year"></canvas>
         </div>
         <div class="chart-box">
           <h3>Shares Owned</h3>
-          <canvas id="chartShares" height="220"></canvas>
+          <canvas id="chartShares" height="220" role="img" aria-label="Line chart showing shares owned over time"></canvas>
         </div>
       </div>
 
       <div class="chart-box" style="margin-top:16px;">
         <h3>Where Your Money Comes From</h3>
-        <canvas id="chartBreakdown" height="240"></canvas>
+        <canvas id="chartBreakdown" height="240" role="img" aria-label="Stacked bar chart showing investment sources: cash invested, dividends reinvested, and price appreciation"></canvas>
       </div>
 
       <div class="chart-box" style="margin-top:16px;">
         <h3>Year-by-Year Breakdown</h3>
-        <div class="table-wrap">
+        <div class="table-wrap" tabindex="0" role="region" aria-label="Scrollable data table">
           <table>
+            <caption class="sr-only">Year-by-year investment projection breakdown</caption>
             <thead>
               <tr>
                 <th>Year</th>
@@ -418,9 +434,9 @@
   <p class="source">
     Share price updates daily after market close. $O: $3.24/yr dividend, 26+ years consecutive growth.<br>
     Sources:
-    <a href="https://stockanalysis.com/stocks/o/dividend/" target="_blank">StockAnalysis</a> &middot;
-    <a href="https://www.macrotrends.net/stocks/charts/O/realty-income/dividend-yield-history" target="_blank">Macrotrends</a> &middot;
-    <a href="https://www.marketbeat.com/stocks/NYSE/O/dividend/" target="_blank">MarketBeat</a>
+    <a href="https://stockanalysis.com/stocks/o/dividend/" target="_blank" rel="noopener noreferrer">StockAnalysis</a> &middot;
+    <a href="https://www.macrotrends.net/stocks/charts/O/realty-income/dividend-yield-history" target="_blank" rel="noopener noreferrer">Macrotrends</a> &middot;
+    <a href="https://www.marketbeat.com/stocks/NYSE/O/dividend/" target="_blank" rel="noopener noreferrer">MarketBeat</a>
     <br><em>For illustration only. Not financial advice. Past performance does not guarantee future results.</em>
   </p>
 </main>
