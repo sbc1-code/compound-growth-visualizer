@@ -1,6 +1,6 @@
 # Compound Growth Visualizer
 
-Interactive dividend reinvestment (DRIP) simulator built to model long-term compound returns from income-producing equities. Defaults to Realty Income ($O) parameters.
+Interactive calculator for modeling long-term compound growth across stocks, ETFs, funds, crypto, real estate shares, or any investment with recurring contributions and optional distributions.
 
 **[Live Demo](https://sbc1-code.github.io/compound-growth-visualizer/)**
 
@@ -8,31 +8,49 @@ Interactive dividend reinvestment (DRIP) simulator built to model long-term comp
 
 ## What It Does
 
-Plug in your numbers and see how compounding plays out over 5-40 years. The tool visualizes:
+Plug in your assumptions and see how compounding plays out over 1-40 years. The tool visualizes:
 
-- **Portfolio value trajectory** with and without DRIP comparison
-- **Monthly dividend income** growth over time
-- **Share accumulation** from contributions + reinvested dividends
-- **Source breakdown** showing cash invested vs. dividends vs. appreciation
+- **Account value trajectory** with optional reinvestment comparison
+- **Monthly distribution income** growth over time
+- **Units owned** from contributions and reinvested distributions
+- **Source breakdown** showing cash invested, distributions, and market movement
 - **Milestone tracking** for income and portfolio targets
 - **Year-by-year table** with full detail
 
-All parameters update in real-time via range sliders. No backend, no accounts. Everything runs in your browser.
+All parameters update in real time. No backend, no accounts, and no live price feed. Everything runs in your browser from the assumptions you enter.
 
 ## Why I Built It
 
-I wanted to see the actual math behind dividend reinvestment before committing capital. Most online calculators are either oversimplified (no contribution growth, no DRIP toggle) or behind a paywall. This shows the full picture in one screen.
+I wanted a transparent way to test investment scenarios without locking the math to one ticker or one income strategy. Most calculators hide the assumptions or flatten important details like contribution growth, distribution reinvestment, and cash distributions. This keeps the model visible.
+
+This is not financial advice and it does not fetch live market prices.
+
+## Math Model
+
+- Annual price growth and distribution growth are converted to effective monthly rates.
+- Price growth is applied at the start of each month.
+- Distributions are paid monthly from the current annual distribution rate.
+- Reinvested distributions buy more units at the current unit price.
+- Cash distributions are retained as account value when reinvestment is off.
+- Monthly contributions are invested at the end of each month.
+- Annual contribution growth applies after each completed year.
 
 ## Stack
 
 - Vanilla JavaScript (no framework)
 - [Chart.js](https://www.chartjs.org/) for visualization
-- Single HTML file, zero dependencies to install
+- Small shared calculator module with Node-based math tests
 - GitHub Pages hosting, $0/mo
 
 ## Run Locally
 
 Just open `index.html` in a browser.
+
+Run the math checks:
+
+```bash
+node tests/calculator.test.js
+```
 
 ## License
 
